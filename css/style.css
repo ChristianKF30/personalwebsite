@@ -1344,14 +1344,22 @@ section {
 /* Specific portfolio images */
 .portfolio-image.ecommerce {
   background-image: url('../images/first-deploy-logs.webp');
+  background-size: contain;
+  background-position: center;
+  background-color: #0e1420;
 }
 
 .portfolio-image.analytics {
   background-image: url('../images/opengraph-image.png');
+  background-size: contain;
+  background-position: center;
+  background-color: #0e1420;
 }
 
 .portfolio-image.wishlist {
   background-image: url('../images/portfolio-wishlist.jpg');
+  background-size: cover;
+  background-position: center;
 }
 
 .portfolio-content {
