@@ -25,7 +25,8 @@ app.post('/contact', async function (req, res) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             },
             body: JSON.stringify({
                 name: name,
@@ -36,14 +37,21 @@ app.post('/contact', async function (req, res) {
             })
         });
 
-        const data = await response.json().catch(() => ({}));
-        console.log('FormSubmit response status:', response.status, 'data:', data);
+        const text = await response.text();
+        console.log('FormSubmit status:', response.status, 'body:', text);
+
+        let data = {};
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            data = {};
+        }
 
         if (response.ok || data.success === 'true' || data.success === true) {
             return res.status(200).json({ success: true });
         } else {
-            const detailMsg = data.message || (typeof data === 'string' ? data : JSON.stringify(data));
-            throw new Error(detailMsg || ('HTTP ' + response.status + ' from email service'));
+            const detailMsg = data.message || (text.length > 0 && text.length < 200 ? text : 'HTTP ' + response.status + ' from email service');
+            throw new Error(detailMsg);
         }
     } catch (err) {
         console.error('Contact error:', err.message);
