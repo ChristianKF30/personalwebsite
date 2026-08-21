@@ -195,7 +195,7 @@ function initTimeline() {
 // Initialize timeline when DOM is ready
 document.addEventListener('DOMContentLoaded', initTimeline);
 
-// Contact form submission directly via FormSubmit AJAX to kjettorp@hotmail.com
+// Contact form submission to kjettorp@hotmail.com with Cloudflare fallback
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('contactForm');
     const submitBtn = document.getElementById('submitBtn');
@@ -206,28 +206,22 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        const data = {
-            name: form.name.value.trim(),
-            email: form.email.value.trim(),
-            projectType: form.projectType.value.trim(),
-            message: form.message.value.trim(),
-            _subject: 'New Portfolio Contact from ' + form.name.value.trim(),
-            _captcha: 'false'
-        };
-
         // Show loading state
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending...';
         statusDiv.style.display = 'none';
 
+        const formData = new FormData(form);
+        formData.append('_subject', 'New Portfolio Contact from ' + (form.name.value || 'Visitor'));
+        formData.append('_captcha', 'false');
+
         try {
             const response = await fetch('https://formsubmit.co/ajax/kjettorp@hotmail.com', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: formData
             });
 
             const result = await response.json().catch(() => ({}));
@@ -237,17 +231,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 statusDiv.style.color = '#4ade80';
                 statusDiv.style.display = 'block';
                 form.reset();
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Message';
             } else {
-                throw new Error(result.message || 'Unable to send message.');
+                throw new Error(result.message || 'Error submitting form');
             }
         } catch (err) {
-            statusDiv.textContent = '❌ Something went wrong: ' + err.message;
-            statusDiv.style.color = '#f87171';
-            statusDiv.style.display = 'block';
-            console.error('Contact form error:', err);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Send Message';
+            console.warn('AJAX submit encountered challenge, using browser fallback...', err);
+            // Fallback: Submit form natively so browser handles Cloudflare challenge directly
+            form.action = 'https://formsubmit.co/kjettorp@hotmail.com';
+            form.method = 'POST';
+
+            if (!form.querySelector('input[name="_subject"]')) {
+                const sub = document.createElement('input');
+                sub.type = 'hidden';
+                sub.name = '_subject';
+                sub.value = 'New Portfolio Contact from ' + (form.name.value || 'Visitor');
+                form.appendChild(sub);
+            }
+            if (!form.querySelector('input[name="_captcha"]')) {
+                const cap = document.createElement('input');
+                cap.type = 'hidden';
+                cap.name = '_captcha';
+                cap.value = 'false';
+                form.appendChild(cap);
+            }
+            form.submit();
         }
     });
 });
