@@ -15,41 +15,36 @@ app.post('/contact', async function (req, res) {
         return res.status(400).json({ error: 'Missing required fields.' });
     }
 
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.error('Email server error: EMAIL_USER or EMAIL_PASS environment variables are not configured.');
-        return res.status(500).json({ error: 'Server email configuration missing. Set EMAIL_USER and EMAIL_PASS on Render.' });
+    const targetEmail = process.env.EMAIL_TO || process.env.EMAIL_USER;
+    if (!targetEmail) {
+        return res.status(500).json({ error: 'Recipient email missing. Set EMAIL_TO or EMAIL_USER on Render.' });
     }
 
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL_USER.trim(),
-            pass: process.env.EMAIL_PASS.trim().replace(/\s+/g, '')
-        },
-        tls: {
-            rejectUnauthorized: false
-        },
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 20000
-    });
-
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_TO || process.env.EMAIL_USER,
-        replyTo: email,
-        subject: 'New Contact: ' + (projectType || 'General inquiry') + ' from ' + name,
-        text: 'Name: ' + name + '\nEmail: ' + email + '\nProject: ' + (projectType || '-') + '\n\nMessage:\n' + message
-    };
-
     try {
-        await transporter.sendMail(mailOptions);
-        return res.status(200).json({ success: true });
+        const response = await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(targetEmail.trim()), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                email: email,
+                _subject: 'New Portfolio Contact: ' + (projectType || 'General inquiry') + ' from ' + name,
+                projectType: projectType || '-',
+                message: message
+            })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (response.ok || data.success === 'true' || data.success === true) {
+            return res.status(200).json({ success: true });
+        } else {
+            throw new Error(data.message || 'Error from email service');
+        }
     } catch (err) {
-        console.error('Email sending error:', err.message);
-        return res.status(500).json({ error: 'Failed to send email: ' + err.message });
+        console.error('Contact error:', err.message);
+        return res.status(500).json({ error: 'Failed to send message: ' + err.message });
     }
 });
 
