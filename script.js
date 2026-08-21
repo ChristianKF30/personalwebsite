@@ -195,7 +195,7 @@ function initTimeline() {
 // Initialize timeline when DOM is ready
 document.addEventListener('DOMContentLoaded', initTimeline);
 
-// Contact form – send to backend /contact route (Nodemailer)
+// Contact form submission directly via FormSubmit AJAX to kjettorp@hotmail.com
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('contactForm');
     const submitBtn = document.getElementById('submitBtn');
@@ -210,7 +210,9 @@ document.addEventListener('DOMContentLoaded', function () {
             name: form.name.value.trim(),
             email: form.email.value.trim(),
             projectType: form.projectType.value.trim(),
-            message: form.message.value.trim()
+            message: form.message.value.trim(),
+            _subject: 'New Portfolio Contact from ' + form.name.value.trim(),
+            _captcha: 'false'
         };
 
         // Show loading state
@@ -219,42 +221,27 @@ document.addEventListener('DOMContentLoaded', function () {
         statusDiv.style.display = 'none';
 
         try {
-            const controller = new AbortController();
-            // Render free tier can take 30-60s+ to wake from sleep
-            const timeoutId = setTimeout(() => controller.abort(), 120000);
-
-            // Show 'waking up' hint after 5 seconds
-            const wakeHint = setTimeout(() => {
-                statusDiv.textContent = '⏳ Server is waking up, please wait...';
-                statusDiv.style.color = '#facc15';
-                statusDiv.style.display = 'block';
-            }, 5000);
-
-            const response = await fetch('/contact', {
+            const response = await fetch('https://formsubmit.co/ajax/kjettorp@hotmail.com', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-                signal: controller.signal
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
             });
 
-            clearTimeout(timeoutId);
-            clearTimeout(wakeHint);
+            const result = await response.json().catch(() => ({}));
 
-            if (response.ok) {
+            if (response.ok || result.success === 'true' || result.success === true) {
                 statusDiv.textContent = '✅ Message sent! I\'ll get back to you soon.';
                 statusDiv.style.color = '#4ade80';
                 statusDiv.style.display = 'block';
                 form.reset();
             } else {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error || 'Server error ' + response.status);
+                throw new Error(result.message || 'Unable to send message.');
             }
         } catch (err) {
-            if (err.name === 'AbortError') {
-                statusDiv.textContent = '❌ Request timed out. Check that the server is running.';
-            } else {
-                statusDiv.textContent = '❌ Something went wrong: ' + err.message;
-            }
+            statusDiv.textContent = '❌ Something went wrong: ' + err.message;
             statusDiv.style.color = '#f87171';
             statusDiv.style.display = 'block';
             console.error('Contact form error:', err);
