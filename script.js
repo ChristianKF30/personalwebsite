@@ -220,8 +220,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             const controller = new AbortController();
-            // Render free tier can take 30-60s to wake from sleep
-            const timeoutId = setTimeout(() => controller.abort(), 60000);
+            // Render free tier can take 30-60s+ to wake from sleep
+            const timeoutId = setTimeout(() => controller.abort(), 120000);
 
             // Show 'waking up' hint after 5 seconds
             const wakeHint = setTimeout(() => {
