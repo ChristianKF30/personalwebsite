@@ -21,14 +21,19 @@ app.post('/contact', async function (req, res) {
     }
 
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: {
             user: process.env.EMAIL_USER.trim(),
             pass: process.env.EMAIL_PASS.trim().replace(/\s+/g, '')
         },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000
+        tls: {
+            rejectUnauthorized: false
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000
     });
 
     const mailOptions = {
