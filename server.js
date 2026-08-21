@@ -21,20 +21,22 @@ app.post('/contact', async function (req, res) {
     }
 
     try {
+        const params = new URLSearchParams();
+        params.append('name', name);
+        params.append('email', email);
+        params.append('_subject', 'New Portfolio Contact: ' + (projectType || 'General inquiry') + ' from ' + name);
+        params.append('projectType', projectType || '-');
+        params.append('message', message);
+        params.append('_captcha', 'false');
+
         const response = await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(targetEmail.trim()), {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'Accept': 'application/json',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             },
-            body: JSON.stringify({
-                name: name,
-                email: email,
-                _subject: 'New Portfolio Contact: ' + (projectType || 'General inquiry') + ' from ' + name,
-                projectType: projectType || '-',
-                message: message
-            })
+            body: params.toString()
         });
 
         const text = await response.text();
