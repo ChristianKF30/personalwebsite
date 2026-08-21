@@ -51,7 +51,9 @@ nav {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 nav.scrolled {
@@ -125,6 +127,8 @@ nav.scrolled {
 
 .nav-links {
   display: flex;
+  justify-content: center;
+  align-items: center;
   list-style: none;
   gap: 1rem;
 }
@@ -1655,6 +1659,11 @@ footer {
 }
 
 @media (max-width: 768px) {
+  nav {
+    justify-content: flex-end;
+    padding: 1rem 1.5rem;
+  }
+
   .nav-container {
     display: flex;
     flex-direction: row;
