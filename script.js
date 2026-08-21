@@ -219,11 +219,17 @@ document.addEventListener('DOMContentLoaded', function () {
         statusDiv.style.display = 'none';
 
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
             const response = await fetch('/contact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId);
 
             if (response.ok) {
                 statusDiv.textContent = '✅ Message sent! I\'ll get back to you soon.';
@@ -231,12 +237,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 statusDiv.style.display = 'block';
                 form.reset();
             } else {
-                throw new Error('Server error');
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || 'Server error ' + response.status);
             }
         } catch (err) {
-            statusDiv.textContent = '❌ Something went wrong. Please try again or email me directly.';
+            if (err.name === 'AbortError') {
+                statusDiv.textContent = '❌ Request timed out. Check that the server is running.';
+            } else {
+                statusDiv.textContent = '❌ Something went wrong: ' + err.message;
+            }
             statusDiv.style.color = '#f87171';
             statusDiv.style.display = 'block';
+            console.error('Contact form error:', err);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Send Message';
