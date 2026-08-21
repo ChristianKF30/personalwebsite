@@ -220,7 +220,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+            // Render free tier can take 30-60s to wake from sleep
+            const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+            // Show 'waking up' hint after 5 seconds
+            const wakeHint = setTimeout(() => {
+                statusDiv.textContent = '⏳ Server is waking up, please wait...';
+                statusDiv.style.color = '#facc15';
+                statusDiv.style.display = 'block';
+            }, 5000);
 
             const response = await fetch('/contact', {
                 method: 'POST',
@@ -230,6 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             clearTimeout(timeoutId);
+            clearTimeout(wakeHint);
 
             if (response.ok) {
                 statusDiv.textContent = '✅ Message sent! I\'ll get back to you soon.';
