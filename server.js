@@ -37,10 +37,13 @@ app.post('/contact', async function (req, res) {
         });
 
         const data = await response.json().catch(() => ({}));
+        console.log('FormSubmit response status:', response.status, 'data:', data);
+
         if (response.ok || data.success === 'true' || data.success === true) {
             return res.status(200).json({ success: true });
         } else {
-            throw new Error(data.message || 'Error from email service');
+            const detailMsg = data.message || (typeof data === 'string' ? data : JSON.stringify(data));
+            throw new Error(detailMsg || ('HTTP ' + response.status + ' from email service'));
         }
     } catch (err) {
         console.error('Contact error:', err.message);
