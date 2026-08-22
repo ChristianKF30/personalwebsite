@@ -1362,6 +1362,12 @@ section {
   background-position: center;
 }
 
+.portfolio-image.mobileapp {
+  background-image: url('../images/portfolio-mobileapp.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
 .portfolio-content {
   padding: 1.8rem 1.5rem;
   display: flex;
@@ -1477,6 +1483,48 @@ section {
   color: var(--accent-blue);
 }
 
+/* Mobile App Link Button */
+.mobile-app-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1.3rem;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  text-decoration: none;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.mobile-app-link-btn:hover {
+  background: #a855f7;
+  color: #0d0d12;
+  border-color: #a855f7;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
+}
+
+.mobile-app-badge {
+  background: #a855f7;
+  color: #0d0d12;
+  font-weight: 900;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.mobile-app-link-btn:hover .mobile-app-badge {
+  background: #0d0d12;
+  color: #c084fc;
+}
+
 .link-icon {
   font-size: 1rem;
   line-height: 1;
@@ -1484,7 +1532,8 @@ section {
 }
 
 .imdb-link-btn:hover .link-icon,
-.render-link-btn:hover .link-icon {
+.render-link-btn:hover .link-icon,
+.mobile-app-link-btn:hover .link-icon {
   transform: translate(3px, -3px);
 }
 
